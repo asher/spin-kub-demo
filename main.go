@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"regexp"
 	"time"
 
 	"golang.org/x/net/context"
@@ -19,6 +20,7 @@ import (
 	"cloud.google.com/go/compute/metadata"
 )
 
+// TODO cli or env configurable
 const metricType = "custom.googleapis.com/workshop/canary/request/errors"
 const projectID = "qcon-2017-workshop"
 
@@ -51,18 +53,26 @@ func createService(ctx context.Context) (*monitoring.Service, error) {
 }
 
 // writeTimeSeriesValue writes a value for the custom metric created
-func writeTimeSeriesValue(s *monitoring.Service, projectID, metricType string) error {
-	instanceId, _ := metadata.InstanceID()
+func writeTimeSeriesValue(s *monitoring.Service, projectID, metricType string, cluster string, sg string) error {
+	instanceId, _ := metadata.InstanceID() // subject to change after start due to live migration
 	zone, _ := metadata.Zone()
 
 	now := time.Now().UTC().Format(time.RFC3339Nano)
-	randVal := rand.Float64() * 0.1
+	randVal := rand.Float64()
+
+	match, _ := regexp.MatchString("baseline", cluster)
+	if match {
+		randVal *= 0.1
+	} else {
+		randVal *= 10
+	}
 
 	timeseries := monitoring.TimeSeries{
 		Metric: &monitoring.Metric{
 			Type: metricType,
 			Labels: map[string]string{
-				"environment": "STAGING",
+				"cluster":     cluster,
+				"servergroup": sg,
 			},
 		},
 		Resource: &monitoring.MonitoredResource{
@@ -107,6 +117,12 @@ func formatResource(resource interface{}) []byte {
 }
 
 func metrics() {
+	hostname := os.Getenv("HOSTNAME")
+	clusteRe, _ := regexp.Compile(`^([\w\-]+)\-v\d+\-\w+$`)
+	sgRe, _ := regexp.Compile(`^([\w\-]+\-v\d+)\-\w+$`)
+	cluster := clusteRe.FindStringSubmatch(hostname)[1]
+	sg := sgRe.FindStringSubmatch(hostname)[1]
+
 	ctx := context.Background()
 	s, err := createService(ctx)
 	if err != nil {
@@ -114,12 +130,15 @@ func metrics() {
 	}
 
 	for {
-		writeTimeSeriesValue(s, projectID, metricType)
+		writeTimeSeriesValue(s, projectID, metricType, cluster, sg)
 		time.Sleep(time.Second * 60)
 	}
 }
 
 func main() {
+	for _, e := range os.Environ() {
+		fmt.Println(e)
+	}
 	go metrics()
 	http.HandleFunc("/", index)
 	port := ":80"
