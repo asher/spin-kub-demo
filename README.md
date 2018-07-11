@@ -1,3 +1,5 @@
-# Sample webserver for Spinnaker codelab
+# Sample webserver that emits a custom stackdriver metric for a Kayenta workshop
 
-Source to prod Kubernetes Spinnaker artifact code is staged here. The point is to provide a simple webserver that can have its colors/content quickly tweaked during a demo or tutorial.
+Source to prod Kubernetes Spinnaker artifact code is staged here. Simple webserver that emits a stackdriver metric
+called custom.googleapis.com/workshop/canary/request/errors tagged with spinnaker cluster and server group names.
+The metric is randomly generated and will be high if the cluster contains canary in the name, or low if the baseline.
