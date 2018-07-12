@@ -64,7 +64,7 @@ func writeTimeSeriesValue(s *monitoring.Service, projectID, metricType string, c
   if match {
     randVal *= 0.1
   } else {
-    randVal *= 10
+    randVal *= 0.125
   }
 
   timeseries := monitoring.TimeSeries{
