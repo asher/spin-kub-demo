@@ -58,14 +58,16 @@ func writeTimeSeriesValue(s *monitoring.Service, projectID, metricType string, c
   zone, _ := metadata.Zone()
 
   now := time.Now().UTC().Format(time.RFC3339Nano)
-  randVal := rand.Float64()
+  randVal := rand.Float64() * 0.1
 
+  /*
   match, _ := regexp.MatchString("baseline", cluster)
   if match {
     randVal *= 0.1
   } else {
     randVal *= 10
   }
+  */
 
   timeseries := monitoring.TimeSeries{
     Metric: &monitoring.Metric{
