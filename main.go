@@ -10,7 +10,6 @@ import (
   "net/http"
   "os"
   "regexp"
-  "strings"
   "time"
 
   "golang.org/x/net/context"
