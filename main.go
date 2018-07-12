@@ -128,7 +128,7 @@ func metrics() {
     writeTimeSeriesValue(s, projectID, errorMetricType, cluster, sg)
     writeTimeSeriesValue(s, projectID, randomMetricType1, cluster, sg)
     writeTimeSeriesValue(s, projectID, randomMetricType2, cluster, sg)
-    time.Sleep(time.Second * 60)
+    time.Sleep(time.Second * 10)
   }
 }
 
