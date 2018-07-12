@@ -10,6 +10,7 @@ import (
   "net/http"
   "os"
   "regexp"
+  "strings"
   "time"
 
   "golang.org/x/net/context"
@@ -21,7 +22,9 @@ import (
 )
 
 // TODO cli or env configurable
-const metricType = "custom.googleapis.com/workshop/canary/request/errors"
+const errorMetricType = "custom.googleapis.com/workshop/canary/request/errors"
+const randomMetricType1 = "custom.googleapis.com/workshop/canary/request/random1"
+const randomMetricType2 = "custom.googleapis.com/workshop/canary/request/random2"
 const projectID = "qcon-2017-workshop"
 
 func index(w http.ResponseWriter, r *http.Request) {
@@ -59,15 +62,6 @@ func writeTimeSeriesValue(s *monitoring.Service, projectID, metricType string, c
 
   now := time.Now().UTC().Format(time.RFC3339Nano)
   randVal := rand.Float64() * 0.1
-
-  /*
-  match, _ := regexp.MatchString("baseline", cluster)
-  if match {
-    randVal *= 0.1
-  } else {
-    randVal *= 10
-  }
-  */
 
   timeseries := monitoring.TimeSeries{
     Metric: &monitoring.Metric{
@@ -132,7 +126,9 @@ func metrics() {
   }
 
   for {
-    writeTimeSeriesValue(s, projectID, metricType, cluster, sg)
+    writeTimeSeriesValue(s, projectID, errorMetricType, cluster, sg)
+    writeTimeSeriesValue(s, projectID, randomMetricType1, cluster, sg)
+    writeTimeSeriesValue(s, projectID, randomMetricType2, cluster, sg)
     time.Sleep(time.Second * 60)
   }
 }
